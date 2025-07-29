@@ -151,10 +151,20 @@ function normalizeUID(df) {
 
 // Merge data
 function mergeData(df_signed, df_loans, df_universal) {
-    let combined = aq.concat([df_signed, df_loans, df_universal]);
+    // Convert all inputs to Arquero tables if they aren't already
+    const tables = [df_signed, df_loans, df_universal]
+        .filter(df => df && df.numRows) // Ensure they're valid Arquero tables
+        .map(df => aq.from(df.objects())); // Convert to fresh Arquero tables if needed
+    
+    // Use Arquero's concat properly
+    let combined = tables.reduce((acc, df) => {
+        return acc.concat(df); // Proper Arquero concatenation
+    }, aq.table({})); // Start with empty table
     
     // Remove duplicates by UID (keeping first occurrence)
-    combined = combined.groupby('UID').slice(0, 1).ungroup();
+    combined = combined.groupby('UID')
+        .filter((g, $) => $.row_number() === 1)
+        .ungroup();
     
     return combined;
 }
