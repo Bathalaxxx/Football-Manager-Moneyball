@@ -108,7 +108,7 @@ async function processHTML(file, signability) {
     
     let df = aq.from(data.slice(1), data[0]);
     df = fixLeagueNames(df);
-    df = df.derive({ Signability: () => signability });
+    return df.derive({Signability: aq.escape(() => signability);
     return normalizeUID(df);
 }
 
