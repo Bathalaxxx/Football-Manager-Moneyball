@@ -152,31 +152,38 @@ function normalizeUID(df) {
 
 // Merge data - Fixed version
 function mergeData(df_signed, df_loans, df_universal) {
-    // Convert all inputs to valid Arquero tables
+    // Filter out empty tables and ensure they're valid
     const tables = [df_signed, df_loans, df_universal]
-        .filter(df => df && typeof df.reify === 'function') // Check if it's an Arquero table
-        .map(df => aq.from(df.objects())); // Ensure fresh tables
+        .filter(df => df && df.numRows() > 0);
     
-    // Start with empty table and concatenate
-    let combined = tables.reduce((acc, table) => {
-        return acc.concat(table);
-    }, aq.table({}));
+    if (tables.length === 0) return aq.table();
     
-    // Remove duplicates by UID
-    combined = combined.groupby('UID')
+    // Find common columns
+    const commonColumns = tables[0].columnNames();
+    tables.slice(1).forEach(df => {
+        commonColumns = commonColumns.filter(col => 
+            df.columnNames().includes(col)
+        );
+    });
+    
+    // Standardize columns before merge
+    const standardized = tables.map(df => 
+        df.select(commonColumns)
+    );
+    
+    return aq.concat(standardized)
+        .groupby('UID')
         .filter((g, $) => $.row_number() === 1)
         .ungroup();
-    
-    return combined;
 }
 
 function cleanAndConvertData(df) {
-    // Convert minutes and filter
-    if (df.columnNames().includes('Mins')) {
-        df = df.filter(d => {
-            const mins = Number(d.Mins);
-            return !isNaN(mins) && mins >= 900;
-        });
+    console.log('Original columns:', df.columnNames());
+    
+    // Add this check at the start
+    if (!df.columnNames().includes('Mins')) {
+        console.error('Missing Mins column - cannot filter');
+        return df;
     }
 
     // Process percentage columns
