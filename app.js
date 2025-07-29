@@ -112,7 +112,7 @@ async function processHTML(file, signability) {
     return normalizeUID(df);
 }
 
-// Fix league names
+// Fixed version - missing parenthesis added
 function fixLeagueNames(df) {
     if (!df.columnNames().includes('Division')) return df;
     
@@ -120,6 +120,7 @@ function fixLeagueNames(df) {
     const leagueParams = Object.fromEntries(
         Object.entries(LEAGUE_NAME_FIXES).map(([key, val]) => 
             [`fix_${key}`, val]
+        ) // <-- This parenthesis was missing
     );
     
     return df.params(leagueParams).derive({
