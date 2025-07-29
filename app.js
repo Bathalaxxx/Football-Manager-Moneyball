@@ -108,7 +108,6 @@ async function processHTML(file, signability) {
     let df = aq.from(data.slice(1), data[0]);
     df = fixLeagueNames(df);
     
-    // Fixed signability assignment
     return df.derive({
         Signability: aq.escape(() => signability)
     });
