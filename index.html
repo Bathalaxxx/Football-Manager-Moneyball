@@ -1,15 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FM24 Player Analyzer</title>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .file-inputs { margin-bottom: 20px; }
+        .results { margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        .loading { display: none; margin: 20px 0; }
+    </style>
 </head>
 <body>
     <h1>FM24 Player Analyzer</h1>
-    <input type="file" id="htmlFileInput" accept=".html">
-    <button onclick="analyze()">Run Analysis</button>
-    <div id="results"></div>
+    <p>Upload your FM24 HTML exports to analyze players (Moneyball style)</p>
+    
+    <div class="file-inputs">
+        <h3>Upload Files:</h3>
+        <div>
+            <label for="signed">Transfer Listed Players:</label>
+            <input type="file" id="signed" accept=".html">
+        </div>
+        <div>
+            <label for="loans">Loan Listed Players:</label>
+            <input type="file" id="loans" accept=".html">
+        </div>
+        <div>
+            <label for="universal">All Players:</label>
+            <input type="file" id="universal" accept=".html">
+        </div>
+        <div>
+            <label for="multipliers">League Multipliers (Excel):</label>
+            <input type="file" id="multipliers" accept=".xlsx,.xls">
+        </div>
+    </div>
+    
+    <button id="analyze">Analyze Players</button>
+    
+    <div class="loading" id="loading">
+        <p>Processing data... This may take a moment.</p>
+    </div>
+    
+    <div class="results" id="results">
+        <h2>Results</h2>
+        <div id="tabs">
+            <!-- Tabs will be generated here -->
+        </div>
+        <div id="content">
+            <!-- Content will be generated here -->
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
