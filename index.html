@@ -6,55 +6,296 @@
     <title>FM24 Player Analyzer</title>
     <script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .file-inputs { margin-bottom: 20px; }
-        .results { margin-top: 30px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        .loading { display: none; margin: 20px 0; }
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            overflow: hidden;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .file-inputs {
+            background: var(--light);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .file-inputs h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .file-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 5px;
+            background: white;
+            transition: all 0.3s;
+        }
+        
+        input[type="file"]:hover {
+            border-color: var(--secondary);
+        }
+        
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--secondary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .results {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            background: var(--light);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .tab-btn:hover {
+            background: #d6eaf8;
+        }
+        
+        .tab-btn.active {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e8f4fc;
+        }
+        
+        .percent {
+            font-weight: 600;
+            color: var(--success);
+        }
+        
+        .download-btn {
+            background-color: var(--success);
+            margin-top: 20px;
+            width: auto;
+            display: inline-block;
+            padding: 10px 20px;
+        }
+        
+        .download-btn:hover {
+            background-color: #219653;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 5px;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>FM24 Player Analyzer</h1>
-    <p>Upload your FM24 HTML exports to analyze players (Moneyball style)</p>
-    
-    <div class="file-inputs">
-        <h3>Upload Files:</h3>
-        <div>
-            <label for="signed">Transfer Listed Players:</label>
-            <input type="file" id="signed" accept=".html">
+    <div class="container">
+        <header>
+            <h1>FM24 Player Analyzer</h1>
+            <p class="subtitle">Moneyball-style player evaluation for Football Manager 2024</p>
+        </header>
+        
+        <div class="file-inputs">
+            <h3>Upload Required Files</h3>
+            <div class="file-group">
+                <label for="signed">Transfer Listed Players (HTML)</label>
+                <input type="file" id="signed" accept=".html">
+            </div>
+            <div class="file-group">
+                <label for="loans">Loan Listed Players (HTML)</label>
+                <input type="file" id="loans" accept=".html">
+            </div>
+            <div class="file-group">
+                <label for="universal">All Players (HTML)</label>
+                <input type="file" id="universal" accept=".html">
+            </div>
+            <div class="file-group">
+                <label for="multipliers">League Multipliers (Excel)</label>
+                <input type="file" id="multipliers" accept=".xlsx,.xls">
+                <small>Optional - Uses default values if not provided</small>
+            </div>
         </div>
-        <div>
-            <label for="loans">Loan Listed Players:</label>
-            <input type="file" id="loans" accept=".html">
+        
+        <button id="analyze">
+            <i class="fas fa-chart-bar"></i> Analyze Players
+        </button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing your data...</p>
+            <p>This may take a moment depending on file sizes</p>
         </div>
-        <div>
-            <label for="universal">All Players:</label>
-            <input type="file" id="universal" accept=".html">
-        </div>
-        <div>
-            <label for="multipliers">League Multipliers (Excel):</label>
-            <input type="file" id="multipliers" accept=".xlsx,.xls">
-        </div>
-    </div>
-    
-    <button id="analyze">Analyze Players</button>
-    
-    <div class="loading" id="loading">
-        <p>Processing data... This may take a moment.</p>
-    </div>
-    
-    <div class="results" id="results">
-        <h2>Results</h2>
-        <div id="tabs">
-            <!-- Tabs will be generated here -->
-        </div>
-        <div id="content">
-            <!-- Content will be generated here -->
+        
+        <div class="results" id="results">
+            <h2>Analysis Results</h2>
+            <p>Browse player ratings by position archetype:</p>
+            
+            <div class="tabs" id="tabs">
+                <!-- Tabs will be generated here -->
+            </div>
+            
+            <div id="content">
+                <!-- Content will be generated here -->
+            </div>
+            
+            <button class="download-btn" id="download">
+                <i class="fas fa-download"></i> Download Full Report (Excel)
+            </button>
         </div>
     </div>
 
