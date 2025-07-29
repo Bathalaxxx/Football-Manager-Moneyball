@@ -116,8 +116,21 @@ async function processHTML(file, signability) {
 function fixLeagueNames(df) {
     if (!df.columnNames().includes('Division')) return df;
     
-    return df.derive({
-        Division: d => LEAGUE_NAME_FIXES[d.Division] || d.Division
+    // Convert league fixes to params Arquero can use
+    const leagueParams = Object.fromEntries(
+        Object.entries(LEAGUE_NAME_FIXES).map(([key, val]) => 
+            [`fix_${key}`, val]
+    );
+    
+    return df.params(leagueParams).derive({
+        Division: aq.escape(d => {
+            const original = d.Division;
+            // Dynamically check all possible fixes
+            for (const [key, val] of Object.entries(LEAGUE_NAME_FIXES)) {
+                if (original === key) return val;
+            }
+            return original;
+        })
     });
 }
 
