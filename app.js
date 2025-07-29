@@ -101,16 +101,19 @@ async function processHTML(file, signability) {
     const doc = parser.parseFromString(text, 'text/html');
     const table = doc.querySelector('table');
     
-    // Convert HTML table to Arquero table
     const data = Array.from(table.querySelectorAll('tr')).map(tr => {
         return Array.from(tr.querySelectorAll('th, td')).map(td => td.textContent.trim());
     });
     
     let df = aq.from(data.slice(1), data[0]);
     df = fixLeagueNames(df);
-    return df.derive({Signability: aq.escape(() => signability);
-    return normalizeUID(df);
+    
+    // Fixed signability assignment
+    return df.derive({
+        Signability: aq.escape(() => signability)
+    });
 }
+
 
 // Fixed version - missing parenthesis added
 function fixLeagueNames(df) {
