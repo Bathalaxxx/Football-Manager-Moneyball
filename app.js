@@ -149,19 +149,20 @@ function normalizeUID(df) {
     });
 }
 
-// Merge data
+
+// Merge data - Fixed version
 function mergeData(df_signed, df_loans, df_universal) {
-    // Convert all inputs to Arquero tables if they aren't already
+    // Convert all inputs to valid Arquero tables
     const tables = [df_signed, df_loans, df_universal]
-        .filter(df => df && df.numRows) // Ensure they're valid Arquero tables
-        .map(df => aq.from(df.objects())); // Convert to fresh Arquero tables if needed
+        .filter(df => df && typeof df.reify === 'function') // Check if it's an Arquero table
+        .map(df => aq.from(df.objects())); // Ensure fresh tables
     
-    // Use Arquero's concat properly
-    let combined = tables.reduce((acc, df) => {
-        return acc.concat(df); // Proper Arquero concatenation
-    }, aq.table({})); // Start with empty table
+    // Start with empty table and concatenate
+    let combined = tables.reduce((acc, table) => {
+        return acc.concat(table);
+    }, aq.table({}));
     
-    // Remove duplicates by UID (keeping first occurrence)
+    // Remove duplicates by UID
     combined = combined.groupby('UID')
         .filter((g, $) => $.row_number() === 1)
         .ungroup();
