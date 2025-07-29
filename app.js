@@ -114,7 +114,7 @@ async function processHTML(file, signability) {
 
 // Fix league names
 function fixLeagueNames(df) {
-    if (!df.has('Division')) return df;
+    if (!df.columnNames().includes('Division')) return df;
     
     return df.derive({
         Division: d => LEAGUE_NAME_FIXES[d.Division] || d.Division
@@ -123,7 +123,7 @@ function fixLeagueNames(df) {
 
 // Normalize UID
 function normalizeUID(df) {
-    if (!df.has('UID')) return df;
+    if (!df.columnNames().includes('UID')) return df;
     
     return df.derive({
         UID: d => {
@@ -143,19 +143,18 @@ function mergeData(df_signed, df_loans, df_universal) {
     return combined;
 }
 
-// Clean and convert data
 function cleanAndConvertData(df) {
     // Convert minutes and filter
-    if (df.has('Mins')) {
+    if (df.columnNames().includes('Mins')) {
         df = df.filter(d => {
             const mins = Number(d.Mins);
             return !isNaN(mins) && mins >= 900;
         });
     }
-    
+
     // Process percentage columns
     PERCENTAGE_COLUMNS.forEach(col => {
-        if (df.has(col)) {
+        if (df.columnNames().includes(col)) {
             df = df.derive({
                 [col]: d => {
                     const val = String(d[col]).replace('%', '').replace('-', '');
@@ -165,9 +164,9 @@ function cleanAndConvertData(df) {
             });
         }
     });
-    
+
     // Process Dist/90
-    if (df.has('Dist/90')) {
+    if (df.columnNames().includes('Dist/90')) {
         df = df.derive({
             'Dist/90': d => {
                 const match = String(d['Dist/90']).match(/[\d.]+/);
@@ -175,15 +174,17 @@ function cleanAndConvertData(df) {
             }
         });
     }
-    
-    // Add league multiplier
-    df = df.derive({
-        'League Multiplier': d => {
-            const power = LEAGUE_POWER[d.Division] || LEAGUE_POWER['Others'];
-            return power / 100.0;
-        }
-    });
-    
+
+    // Add league multiplier (only if Division exists)
+    if (df.columnNames().includes('Division')) {
+        df = df.derive({
+            'League Multiplier': d => {
+                const power = LEAGUE_POWER[d.Division] || LEAGUE_POWER['Others'];
+                return power / 100.0;
+            }
+        });
+    }
+
     // Convert other numeric columns
     df.columnNames().forEach(col => {
         if (!TEXT_COLUMNS.includes(col) && col !== 'Signability' && !PERCENTAGE_COLUMNS.includes(col)) {
@@ -195,7 +196,7 @@ function cleanAndConvertData(df) {
             });
         }
     });
-    
+
     return df;
 }
 
